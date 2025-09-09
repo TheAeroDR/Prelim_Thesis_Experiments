@@ -11,6 +11,8 @@ directory = os.path.abspath(directory)
 
 with open(mapping_file, "w", encoding="utf-8") as map_file:
     for root, _, files in os.walk(directory):
+        if ".git" in os.path.relpath(root, directory).split(os.sep):
+            continue
         for f in files:
             if f in skip_files:
                 continue

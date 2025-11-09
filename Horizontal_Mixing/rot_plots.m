@@ -4,12 +4,12 @@
 %plotspectrogram(magnetic_spec,50);
 
 %%
-%filename = 'poly_rot_M.txt'; %2 inside 1 outside (columns 6 and 3)
+filename = 'poly_rot_M.txt'; %2 inside 1 outside (columns 6 and 3)
 %filename = 'MGS1_air.txt'; %2 inside, 1 outide (columns 6 and 3)
 %filename = '20s_field_mill_on.txt';%2 inside, 1 outside (columns 2 and 1)
-%filename = "mgs1_drop_KM.txt";
-filename = "MGS1C_rot.txt";
-%filename = "MGS1C_FM_on.txt";
+%filename = "mgs1_drop_KM.txt";%2 inside, 1 outside (columns 2 and 1)
+%filename = "MGS1C_rot.txt";
+filename = "MGS1C_FM_on.txt";
 
 %filename = 'testing.txt';%2 inside, 1 outside (columns 2 and 1)
 
@@ -20,8 +20,9 @@ plotspectrogram(magnetic_spec,500);
 title('raw')
 
 removed_spec = spectrogram_mag(filename, [2,1], 0, 'reduced', true, true);
+removed_spec.t = removed_spec.t - 3.7; %mgs1
+%removed_spec.t = removed_spec.t - 7.8; %mgs1c
 figure(2)
-nexttile(1)
 plotspectrogram(removed_spec,100)
 
 A=1;

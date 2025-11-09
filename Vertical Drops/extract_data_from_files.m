@@ -1,8 +1,15 @@
 %%
 clear cutoff delta e_field endtime fm_times Fs fs1 fs2 keithley loc pk time
 
-fs1 = 'poly_drop_K.txt';
-fs2 = 'poly_drop_S.dat';
+%fs1 = 'poly_drop_K.txt';
+%fs2 = 'poly_drop_S.dat';
+%fs1 = 'uncharged_glass_drop_K.txt';
+%fs2 = 'uncharged_glass_drop_S.dat';
+%fs1 = 'mgs1_drop_KM.txt';
+%fs2 = 'mgs1_drop_S.dat';
+fs1 = 'mgs1c_drop_KM.txt';
+fs2 = 'mgs1c_drop_S.dat';
+
 
 [keithley,time,delta,Fs,cutoff,endtime,M] = keithley_import(fs1,20);
 %%
@@ -26,25 +33,16 @@ time = time - loc;
 fm_times = fm_times - loc;
 %%
 figure
-tiledlayout(2,1)
-nexttile
-    plot(time,keithley) 
-    hold on
-ylabel('Charge [pC]')
-nexttile
-plot(fm_times,e_field)
-hold on
-ylabel('Electric Field [V/m]')
-
-%%
-figure
 yyaxis left
 plot(time,keithley) 
 ylabel('Charge [pC]')
 yyaxis right
-plot(fm_times,e_field)
+plot(fm_times,e_field,':')
 hold on
+lowess = smooth(fm_times,e_field,30,'lowess');
+plot(fm_times,lowess,'-','LineWidth',3);
 ylabel('Electric Field [V/m]')
+xlabel('Time [s]')
 %%
 figure
 plot(time,delta)

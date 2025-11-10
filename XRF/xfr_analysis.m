@@ -14,9 +14,9 @@ concs = table2array(concs) ./ 1e4;
 errors = data(:,emask);
 errors = table2array(errors) ./ 1e4;
 
-errors = errors(:,any(concs>0.1));
-words = words(:,any(concs>0.1));
-concs = concs(:,any(concs>0.1));
+errors = errors(:,any(concs>0.7));
+words = words(:,any(concs>0.7));
+concs = concs(:,any(concs>0.7));
 error_low = errors;
 neg_check = concs - errors;
 error_low(neg_check<0) = concs(neg_check<0);

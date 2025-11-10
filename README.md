@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1049563286.svg)](https://doi.org/10.5281/zenodo.17573824)
+
 # Prelim_Thesis_Experiments
 
 This repository contains the code and data files for the first chapter in my thesis. 

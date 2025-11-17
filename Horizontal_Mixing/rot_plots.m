@@ -4,16 +4,17 @@
 %plotspectrogram(magnetic_spec,50);
 
 %%
-filename = 'poly_rot_M.txt'; %2 inside 1 outside (columns 6 and 3)
+%filename = 'poly_rot_M.txt'; %2 inside 1 outside (columns 6 and 3)
 %filename = 'MGS1_air.txt'; %2 inside, 1 outide (columns 6 and 3)
 %filename = '20s_field_mill_on.txt';%2 inside, 1 outside (columns 2 and 1)
 %filename = "mgs1_drop_KM.txt";%2 inside, 1 outside (columns 2 and 1)
 %filename = "MGS1C_rot.txt";
-filename = "MGS1C_FM_on.txt";
+%filename = "MGS1C_FM_on.txt";
+filename = "ljm_brass.csv";
 
 %filename = 'testing.txt';%2 inside, 1 outside (columns 2 and 1)
 
-magnetic_spec = spectrogram_mag(filename, 2, 0, 'reduced', true, true);
+magnetic_spec = spectrogram_mag2(filename, 2, 1, 'reduced', true, true);
 
 figure
 plotspectrogram(magnetic_spec,500);
@@ -72,6 +73,84 @@ function output = spectrogram_mag(filename, col, sc_flag, notch_mode, apply_high
     % Spectrogram settings
     M = Fs;
     L = Fs / 2;
+
+    g = tukeywin(M,0.1);
+    Ndft = 2^nextpow2(M);
+    Ts = 1 / Fs;
+    
+    fft_single(data,Fs);
+
+    [s, f, t] = spectrogram(data, g, L, Ndft, Fs, 'onesided', 'yaxis');
+    s = s ./ M;
+    s(2:end-1, :) = 2 * s(2:end-1, :);
+
+    if sc_flag == 1
+        load lemi_tf_dat.mat lemi_tf
+        fd = (1 / (2 * pi)) * (2 / Ts) * atan((2 * pi * f * Ts) / 2);
+        gain = interp1(lemi_tf(:, 1), lemi_tf(:, 2), fd, 'linear', 'extrap');
+        phase = interp1(lemi_tf(:, 1), lemi_tf(:, 3), fd, 'linear', 'extrap');
+        TF = (gain .* exp(1i * deg2rad(phase)))';
+        sc = s ./ (ones(length(t), 1) * TF)';
+    else
+        sc = s .* 35;
+    end
+
+    output.s = sc;
+    output.f = f;
+    output.t = t;
+end
+
+function output = spectrogram_mag2(filename, col, sc_flag, notch_mode, apply_highpass, apply_notch)
+    % Defaults for optional arguments
+    if nargin < 4 || isempty(notch_mode), notch_mode = 'comb'; end
+    if nargin < 5 || isempty(apply_highpass), apply_highpass = true; end
+    if nargin < 6 || isempty(apply_notch), apply_notch = true; end
+    
+    fid = fopen(filename, 'r');
+    Fs = fgetl(fid);
+    fclose(fid);
+
+    Fs = textscan(Fs, 'Sample rate: %f S/s');
+    Fs = floor(Fs{1});
+
+    import = readmatrix(filename);
+    if length(col) == 2
+        data_1 = import(:, col(1)) - mean(import(:, col(1)));
+        data_2 = import(:, col(2)) - mean(import(:, col(2)));
+        data = (data_1 - data_2) * 1000;
+    else
+        data = import(:, col) * 1000;
+        data = data - mean(data);
+    end
+    clear import;
+    
+    % High-pass filter
+    if apply_highpass
+        data = highpass_filter(data, Fs, 2);
+    end
+
+    % Notch filter
+    if apply_notch
+        switch lower(notch_mode)
+            case 'butter'
+                data = comb_notch_filter(data, Fs, 50, 5, 1);
+            case 'comb'
+                data = notch_50Hz(data, Fs);
+            case 'reduced'
+                Hd = notch_50_100(Fs, 1);
+                data = Hd(data);
+            otherwise
+                warning('Unknown notch mode. Skipping notch filtering.');
+        end
+    end
+
+
+    % Spectrogram settings
+    M = Fs;
+    L = Fs / 2;
+
+    L = 500;
+
     g = tukeywin(M,0.1);
     Ndft = 2^nextpow2(M);
     Ts = 1 / Fs;

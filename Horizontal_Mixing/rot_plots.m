@@ -17,8 +17,8 @@ filename = "ljm_brass.csv";
 magnetic_spec = spectrogram_mag2(filename, 2, 1, 'reduced', true, true);
 
 figure
-plotspectrogram(magnetic_spec,500);
-title('raw')
+plotspectrogram(magnetic_spec,100);
+%title('raw')
 
 removed_spec = spectrogram_mag(filename, [2,1], 0, 'reduced', true, true);
 removed_spec.t = removed_spec.t - 3.7; %mgs1
